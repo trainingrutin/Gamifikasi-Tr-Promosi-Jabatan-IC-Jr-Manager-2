@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operations & Inventory Master - Canvas Edition</title>
+    <!-- Google Fonts: Inter & Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f3f0ff;
+            --card-bg: #ffffff;
+            --primary: #7c3aed;
+            --primary-hover: #6d28d9;
+            --accent: #f59e0b;
+            --border-color: #1f2937;
+            --shadow: 4px 4px 0px #1f2937;
+            --shadow-sm: 2px 2px 0px #1f2937;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #1f2937;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            background-image: radial-gradient(#ddd6fe 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+
+        .game-wrapper {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Control Bar / Top Bar */
+        .top-bar {
+            background: var(--border-color);
+            color: white;
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .toggle-view-btns button {
+            background: var(--accent);
+            border: 2px solid white;
+            color: #1f2937;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+
+        .toggle-view-btns button.active {
+            background: #10b981;
+            color: white;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--border-color);
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .header h1 {
+            font-size: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        .audio-btn {
+            background: white;
+            border: 2px solid var(--border-color);
+            color: #1f2937;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            font-size: 11px;
+        }
+
+        .audio-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        /* Screen Sections */
+        .screen-container {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        h2 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 18px;
+            color: #1f2937;
+        }
+
+        p {
+            font-size: 13px;
+            line-height: 1.4;
+            color: #4b5563;
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            box-shadow: var(--shadow-sm);
+            background: #faf5ff;
+        }
+
+        input:focus {
+            background: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .btn-action {
+            background: var(--accent);
+            color: #1f2937;
+            border: 2.5px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.1s;
+        }
+
+        .btn-action:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .hook-card {
+            background: #ede9fe;
+            border: 2px dashed var(--primary);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #5b21b6;
+        }
+
+        /* Canvas Elements */
+        #gameCanvas {
+            width: 100%;
+            height: 490px;
+            background: #faf5ff;
+            border: 3px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        #codeViewer {
+            background: #1e1b4b;
+            color: #e2e8f0;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            display: none;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: #6b7280;
+            padding: 10px 0;
+            font-weight: 600;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <!-- Control Bar -->
+        <div class="top-bar">
+            <span>🎨 Canvas Gamifikasi EDS</span>
+            <div class="toggle-view-btns">
+                <button id="modePreviewBtn" class="active" onclick="setViewMode('preview')">Preview</button>
+                <button id="modeCodeBtn" onclick="setViewMode('code')">Code</button>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>Ops & Inventory Master 🎯</h1>
+            <button class="audio-btn" id="audioToggle" onclick="toggleAudio()">🔊 BGM: OFF</button>
+        </div>
+
+        <!-- CODE VIEW -->
+        <div id="codeViewArea" class="screen-container" style="display: none;">
+            <h2>Source Code Canvas (HTML5)</h2>
+            <div id="codeViewer"></div>
+            <button class="btn-action btn-primary" onclick="setViewMode('preview')">Kembali ke Canvas</button>
+        </div>
+
+        <!-- PREVIEW VIEW -->
+        <div id="previewViewArea" class="screen-container">
+            
+            <!-- STEP 1: GATEWAY & REGISTRATION -->
+            <div id="stepGateway" style="display: flex; flex-direction: column; gap: 12px;">
+                <h2>Identitas Peserta Gateway</h2>
+                <p>Masukkan NIK dan Nama lengkap Anda untuk memulai simulasi penanganan Intransit, Stock Opname, Investigasi Selisih, dan Reporting.</p>
+                
+                <div class="hook-card">
+                    💡 <strong>HOOK:</strong> Penguasaan komprehensif atas Stock Opname, Investigasi Selisih/NKL, Intransit, & Reporting mencegah potensi kerugian finansial operasional!
+                </div>
+
+                <div class="input-box">
+                    <label>Nama Lengkap (Huruf Alfabet):</label>
+                    <input type="text" id="userNameInput" placeholder="Contoh: Ahmad Rizki" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+                </div>
+
+                <div class="input-box">
+                    <label>NIK (Angka):</label>
+                    <input type="text" id="userNikInput" placeholder="Contoh: 20261088" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+
+                <button class="btn-action" onclick="proceedToBriefing()">Lanjut ke Misi ➡️</button>
+            </div>
+
+            <!-- STEP 2: BRIEFING -->
+            <div id="stepBriefing" style="display: none; flex-direction: column; gap: 12px;">
+                <h2>Mission Briefing & Modul Utama</h2>
+                
+                <div style="background: #f0fdf4; border: 2px solid #10b981; padding: 10px; border-radius: 8px; font-size: 12px; color: #065f46;">
+                    <strong>🎯 Cakupan 4 Modul Utama:</strong>
+                    <ul style="margin-left: 16px; margin-top: 4px;">
+                        <li><strong>1. Stock Opname (SO):</strong> Persiapan, cut-off transaksi, & pelaksanaan SO Grand/Parsial.</li>
+                        <li><strong>2. Investigasi & NKL:</strong> Penelusuran 5M, akar masalah selisih fisik vs sistem, & pembebanan.</li>
+                        <li><strong>3. Intransit & BRD:</strong> SOP NPB, NRB retur toko, & penanganan aging proforma.</li>
+                        <li><strong>4. Reporting Ops:</strong> Analisis laporan register, BAP, & tindakan korektif.</li>
+                    </ul>
+                </div>
+
+                <p style="font-size: 12px;">Sistem Canvas interaktif akan menampilkan 8 skenario kasus. Pilih opsi jawaban langsung pada area Canvas!</p>
+
+                <button class="btn-action btn-primary" onclick="launchCanvasEngine()">Mulai Engine Canvas 🚀</button>
+            </div>
+
+            <!-- STEP 3 & 4: CANVAS RENDER AREA -->
+            <div id="stepCanvas" style="display: none; flex-direction: column; gap: 8px;">
+                <canvas id="gameCanvas" width="440" height="490"></canvas>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            Education & Training Dept. © 2026
+        </div>
+    </div>
+
+    <script>
+        // --- 1. AUDIO SYNTHESIS ENGINE (Web Audio API) ---
+        let audioCtx = null;
+        let bgmPlaying = false;
+        let bgmTimer = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function toggleAudio() {
+            initAudio();
+            bgmPlaying = !bgmPlaying;
+            const btn = document.getElementById('audioToggle');
+            if (bgmPlaying) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                btn.textContent = "🔊 BGM: ON";
+                startChiptuneBGM();
+            } else {
+                btn.textContent = "🔊 BGM: OFF";
+                stopChiptuneBGM();
+            }
+            playSFX('click');
+        }
+
+        function startChiptuneBGM() {
+            if (bgmTimer) clearInterval(bgmTimer);
+            const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63];
+            let idx = 0;
+            bgmTimer = setInterval(() => {
+                if (!bgmPlaying || !audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(notes[idx], audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.28);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.28);
+                idx = (idx + 1) % notes.length;
+            }, 320);
+        }
+
+        function stopChiptuneBGM() {
+            if (bgmTimer) clearInterval(bgmTimer);
+        }
+
+        function playSFX(type) {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.18);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.18);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(140, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                } else {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.04);
+                }
+            } catch(e){}
+        }
+
+        let player = { name: '', nik: '' };
+        let currentIdx = 0;
+        let score = 0;
+        let gameState = 'QUIZ'; // 'QUIZ', 'FEEDBACK', 'RESULT'
+        let selectedOption = null;
+        let particles = [];
+
+        // Question Dataset - Inclusive of Stock Opname, Investigasi, Intransit, & Reporting
+        const questions = [
+            {
+                mod: "STOCK OPNAME (SO)",
+                q: "Tahap krusial apa yang WAJIB dipastikan sebelum tim SO memulai perhitungan fisik barang?",
+                opts: [
+                    "A. Mematikan seluruh penerangan gudang/toko.",
+                    "B. Melakukan Cut-Off transaksi & posting dokumen penerimaan/pengeluaran.",
+                    "C. Langsung membuang produk yang rusak tanpa pencatatan.",
+                    "D. Mengubah harga jual seluruh produk di kasir."
+                ],
+                ans: 1,
+                exp: "Cut-Off transaksi memastikan tidak ada pergerakan barang atau dokumen yang menggantung selama proses perhitungan SO."
+            },
+            {
+                mod: "STOCK OPNAME (SO)",
+                q: "Jika terjadi selisih antara perhitungan awal dengan data sistem saat SO Parsial, langkah pertama yang dilakukan adalah:",
+                opts: [
+                    "A. Melakukan hitung ulang (re-count) secara silang dengan personel berbeda.",
+                    "B. Membebankan selisih langsung ke kasir toko.",
+                    "C. Mengubah master data stok sistem secara manual tanpa persetujuan.",
+                    "D. Mengabaikan selisih selama nilainya di bawah Rp1.000.000."
+                ],
+                ans: 0,
+                exp: "Re-count oleh penghitung kedua/pemeriksa independen memastikan validitas angka sebelum penetapan selisih."
+            },
+            {
+                mod: "INVESTIGASI SELISIH & NKL",
+                q: "Metode pendekatan investigasi apa yang paling tepat untuk menemukan akar masalah Nota Kurang/Laba (NKL)?",
+                opts: [
+                    "A. Metode tebak acak (random guess).",
+                    "B. Analisis 5-Why & Fishbone (Man, Method, Material, Machine, Milieu).",
+                    "C. Penunjukan pihak bersalah tanpa cek dokumen.",
+                    "D. Menunggu hingga periode SO berikutnya."
+                ],
+                ans: 1,
+                exp: "Analisis Fishbone (5M) membantu mengidentifikasi akar penyebab selisih dari berbagai aspek secara terstruktur."
+            },
+            {
+                mod: "INVESTIGASI SELISIH & NKL",
+                q: "Dokumen bukti transaksi fisik apa yang HARUS dicocokkan ketika terjadi selisih stok penerimaan barang?",
+                opts: [
+                    "A. Laporan Absensi Harian Karyawan.",
+                    "B. Surat Jalan, LPB (Laporan Penerimaan Barang), & Checklist Fisik.",
+                    "C. Jadwal Kebersihan Toko.",
+                    "D. Bukti Pembayaran Tagihan Listrik."
+                ],
+                ans: 1,
+                exp: "Verifikasi dokumen penerimaan (Surat Jalan vs LPB vs Fisik) adalah langkah utama penelusuran selisih masuk."
+            },
+            {
+                mod: "INTRANSIT OPERATIONS",
+                q: "Dokumen utama apa yang WAJIB ditempelkan pada fisik koli barang retur toko (NRB)?",
+                opts: [
+                    "A. Laporan Kas Toko.",
+                    "B. Nota Retur Barang (NRB) asli / terotentikasi.",
+                    "C. Surat Izin Mengemudi Driver.",
+                    "D. Bukti Setoran Bank."
+                ],
+                ans: 1,
+                exp: "Dokumen NRB ditempel di koli barang retur sebagai bukti serah terima fisik bersama driver/transportasi."
+            },
+            {
+                mod: "INTRANSIT OPERATIONS",
+                q: "Berapa batas aging toleransi kewajaran untuk Saldo Intransit Proforma Toko (NRB)?",
+                opts: [
+                    "A. Tidak boleh ada intransit > 1 Hari",
+                    "B. Tidak boleh ada intransit > 4 Hari",
+                    "C. Bebas asal dilaporkan di akhir tahun",
+                    "D. Maksimal 30 Hari Kalender"
+                ],
+                ans: 1,
+                exp: "Target kewajaran saldo intransit proforma ditargetkan tidak melebihi 4 hari agar tidak memicu pembengkakan NKL."
+            },
+            {
+                mod: "REPORTING & AUDIT",
+                q: "Apa fungsi utama Laporan Register Selisih (BAP) dalam pelaporan operasional?",
+                opts: [
+                    "A. Menjadi dasar resmi pertanggungjawaban & penetapan pembebanan selisih.",
+                    "B. Sebagai bahan promosi pemasaran toko.",
+                    "C. Untuk mengajukan pinjaman ke bank.",
+                    "D. Mengganti sistem absensi harian."
+                ],
+                ans: 0,
+                exp: "BAP (Berita Acara Pemeriksaan) menyajikan kronologi, bukti investigasi, dan rekomendasi pembebanan secara akuntabel."
+            },
+            {
+                mod: "REPORTING & AUDIT",
+                q: "Bagaimana cara memastikan kualitas laporan hasil SO dan Investigasi tepercaya bagi Manajemen?",
+                opts: [
+                    "A. Mengisi data secara subjektif.",
+                    "B. Melampirkan bukti verifikasi berjenjang (pencocokan sistem & otorisasi pejabat berwenang).",
+                    "C. Menghapus histori selisih periode lalu.",
+                    "D. Mengirimkan laporan verbal tanpa dokumen pendukung."
+                ],
+                ans: 1,
+                exp: "Laporan yang tepercaya harus didukung bukti verifikasi data, lampiran valid, serta approval berjenjang."
+            }
+        ];
+
+        function proceedToBriefing() {
+            const name = document.getElementById('userNameInput').value.trim();
+            const nik = document.getElementById('userNikInput').value.trim();
+
+            if (!name || !nik) {
+                alert("Mohon lengkapi Nama dan NIK Anda terlebih dahulu!");
+                return;
+            }
+
+            player.name = name;
+            player.nik = nik;
+
+            document.getElementById('stepGateway').style.display = 'none';
+            document.getElementById('stepBriefing').style.display = 'flex';
+            playSFX('click');
+        }
+
+        function launchCanvasEngine() {
+            document.getElementById('stepBriefing').style.display = 'none';
+            document.getElementById('stepCanvas').style.display = 'flex';
+            initCanvas();
+            playSFX('click');
+        }
+
+        function setViewMode(mode) {
+            const previewArea = document.getElementById('previewViewArea');
+            const codeArea = document.getElementById('codeViewArea');
+            const btnP = document.getElementById('modePreviewBtn');
+            const btnC = document.getElementById('modeCodeBtn');
+
+            if (mode === 'code') {
+                previewArea.style.display = 'none';
+                codeArea.style.display = 'flex';
+                btnC.classList.add('active');
+                btnP.classList.remove('active');
+                document.getElementById('codeViewer').textContent = document.documentElement.outerHTML;
+            } else {
+                codeArea.style.display = 'none';
+                previewArea.style.display = 'flex';
+                btnP.classList.add('active');
+                btnC.classList.remove('active');
+            }
+            playSFX('click');
+        }
+
+        let canvas, ctx;
+        let optionBoxes = [];
+        let btnNextBox = null;
+
+        function initCanvas() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            canvas.removeEventListener('click', handleCanvasClick);
+            canvas.addEventListener('click', handleCanvasClick);
+
+            resetQuizState();
+            requestAnimationFrame(renderLoop);
+        }
+
+        function resetQuizState() {
+            currentIdx = 0;
+            score = 0;
+            gameState = 'QUIZ';
+            selectedOption = null;
+        }
+
+        function renderLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Background
+            ctx.fillStyle = "#faf5ff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (gameState === 'QUIZ' || gameState === 'FEEDBACK') {
+                drawHeaderProgress();
+                drawQuestionCard();
+                drawOptionBoxes();
+                if (gameState === 'FEEDBACK') {
+                    drawFeedbackCard();
+                }
+            } else if (gameState === 'RESULT') {
+                drawResultScreen();
+            }
+
+            // Update & render particles (Confetti)
+            updateParticles();
+
+            requestAnimationFrame(renderLoop);
+        }
+
+        // Header & Progress Bar
+        function drawHeaderProgress() {
+            // Badge Indicator
+            ctx.fillStyle = "#ede9fe";
+            ctx.strokeStyle = "#1f2937";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(12, 10, 416, 32, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = "#6d28d9";
+            ctx.font = "bold 11px Fredoka, sans-serif";
+            ctx.textAlign = "left";
+            let badgeName = currentIdx >= 6 ? "🏆 Inventory Specialist" : (currentIdx >= 3 ? "🥈 Auditor Controller" : "🥉 Trainee Inspector");
+            ctx.fillText(`PLAYER: ${player.name.toUpperCase()} (${player.nik}) | ${badgeName}`, 20, 30);
+
+            // Progress Bar
+            ctx.fillStyle = "#e5e7eb";
+            ctx.beginPath();
+            ctx.roundRect(12, 48, 416, 10, 5);
+            ctx.fill();
+
+            let progressRatio = currentIdx / questions.length;
+            ctx.fillStyle = "#10b981";
+            ctx.beginPath();
+            ctx.roundRect(12, 48, 416 * progressRatio, 10, 5);
+            ctx.fill();
+        }
+
+        // Question Card Area
+        function drawQuestionCard() {
+            const q = questions[currentIdx];
+
+            // Question Box
+            ctx.fillStyle = "#ffffff";
+            ctx.strokeStyle = "#1f2937";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(12, 66, 416, 100, 10);
+            ctx.fill();
+            ctx.stroke();
+
+            // Module Label Badge
+            ctx.fillStyle = "#7c3aed";
+            ctx.font = "bold 10px Fredoka, sans-serif";
+            ctx.fillText(`MODUL: ${q.mod}`, 22, 84);
+
+            ctx.fillStyle = "#f59e0b";
+            ctx.textAlign = "right";
+            ctx.fillText(`SKOR: ${score}`, 416, 84);
+
+            // Question Text (Multiline Wrapping)
+            ctx.fillStyle = "#1f2937";
+            ctx.font = "bold 12px Inter, sans-serif";
+            ctx.textAlign = "left";
+            wrapText(ctx, q.q, 22, 104, 390, 16);
+        }
+
+        // Option Boxes
+        function drawOptionBoxes() {
+            const q = questions[currentIdx];
+            optionBoxes = [];
+            let startY = 175;
+            let boxHeight = 44;
+            let gap = 8;
+
+            q.opts.forEach((optText, index) => {
+                let y = startY + (index * (boxHeight + gap));
+                let box = { x: 12, y: y, w: 416, h: boxHeight, index: index };
+                optionBoxes.push(box);
+
+                // Styling Base
+                ctx.fillStyle = "#ffffff";
+                ctx.strokeStyle = "#1f2937";
+                ctx.lineWidth = 2;
+
+                if (gameState === 'FEEDBACK') {
+                    if (index === q.ans) {
+                        ctx.fillStyle = "#d1fae5";
+                        ctx.strokeStyle = "#10b981";
+                    } else if (index === selectedOption && selectedOption !== q.ans) {
+                        ctx.fillStyle = "#fee2e2";
+                        ctx.strokeStyle = "#ef4444";
+                    }
+                }
+
+                ctx.beginPath();
+                ctx.roundRect(box.x, box.y, box.w, box.h, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                // Option Text
+                ctx.fillStyle = "#1f2937";
+                ctx.font = "11px Inter, sans-serif";
+                wrapText(ctx, optText, box.x + 12, box.y + 20, box.w - 24, 14);
+            });
+        }
+
+        // Feedback Card Bottom Sheet
+        function drawFeedbackCard() {
+            const q = questions[currentIdx];
+            let isCorrect = selectedOption === q.ans;
+
+            ctx.fillStyle = isCorrect ? "#f0fdf4" : "#fef2f2";
+            ctx.strokeStyle = isCorrect ? "#10b981" : "#ef4444";
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.roundRect(12, 390, 416, 88, 10);
+            ctx.fill();
+            ctx.stroke();
+
+            // Feedback Status Text
+            ctx.fillStyle = isCorrect ? "#065f46" : "#991b1b";
+            ctx.font = "bold 12px Fredoka, sans-serif";
+            ctx.fillText(isCorrect ? "✅ JAWABAN BENAR! (+100)" : "❌ JAWABAN KURANG TEPAT (-25)", 24, 408);
+
+            // Explanation Text
+            ctx.fillStyle = "#374151";
+            ctx.font = "10px Inter, sans-serif";
+            wrapText(ctx, q.exp, 24, 424, 280, 13);
+
+            // Next Button inside Canvas
+            btnNextBox = { x: 315, y: 428, w: 100, h: 36 };
+            ctx.fillStyle = "#7c3aed";
+            ctx.strokeStyle = "#1f2937";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(btnNextBox.x, btnNextBox.y, btnNextBox.w, btnNextBox.h, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 11px Fredoka, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("LANJUT ➡️", btnNextBox.x + 50, btnNextBox.y + 22);
+            ctx.textAlign = "left";
+        }
+
+        function drawResultScreen() {
+            ctx.fillStyle = "#ede9fe";
+            ctx.strokeStyle = "#1f2937";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.roundRect(20, 25, 400, 435, 16);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = "#7c3aed";
+            ctx.font = "bold 19px Fredoka, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("POST-ACTION DEBRIEF", 220, 60);
+
+            ctx.fillStyle = "#1f2937";
+            ctx.font = "12px Inter, sans-serif";
+            ctx.fillText(`${player.name} (NIK: ${player.nik})`, 220, 82);
+
+            let pct = (score / (questions.length * 100)) * 100;
+            let badgeIcon = pct >= 80 ? "🥇" : (pct >= 50 ? "🥈" : "🥉");
+            let badgeTitle = pct >= 80 ? "Master Ops & Inventory Expert" : (pct >= 50 ? "Competent Ops Controller" : "Ops Operations Trainee");
+
+            ctx.font = "46px Inter, sans-serif";
+            ctx.fillText(badgeIcon, 220, 140);
+
+            ctx.fillStyle = "#5b21b6";
+            ctx.font = "bold 15px Fredoka, sans-serif";
+            ctx.fillText(badgeTitle, 220, 178);
+
+            ctx.fillStyle = "#1f2937";
+            ctx.font = "bold 13px Inter, sans-serif";
+            ctx.fillText(`Total Skor Akhir: ${score} Poin`, 220, 205);
+
+            // Reinforcement Message
+            ctx.font = "11px Inter, sans-serif";
+            ctx.fillStyle = "#4b5563";
+            let msg = pct >= 80 ? 
+                "Luar biasa! Anda berhasil menguasai seluruh alur Stock Opname, Investigasi Selisih (Fishbone), Intransit NRB/NPB, & Pelaporan BAP secara komprehensif!" :
+                "Pencapaian yang baik! Tingkatkan pemahaman pada investigasi selisih & penelusuran dokumen pendukung untuk hasil yang sempurna.";
+            wrapText(ctx, msg, 40, 235, 360, 16);
+
+            // Restart Button Canvas
+            btnNextBox = { x: 120, y: 385, w: 200, h: 44 };
+            ctx.fillStyle = "#f59e0b";
+            ctx.strokeStyle = "#1f2937";
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.roundRect(btnNextBox.x, btnNextBox.y, btnNextBox.w, btnNextBox.h, 12);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = "#1f2937";
+            ctx.font = "bold 14px Fredoka, sans-serif";
+            ctx.fillText("ULANGI MISI 🔄", 220, 412);
+            ctx.textAlign = "left";
+        }
+
+        // Canvas Interaction Handler
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            const clickX = (e.clientX - rect.left) * scaleX;
+            const clickY = (e.clientY - rect.top) * scaleY;
+
+            if (gameState === 'QUIZ') {
+                optionBoxes.forEach(box => {
+                    if (clickX >= box.x && clickX <= box.x + box.w && clickY >= box.y && clickY <= box.y + box.h) {
+                        selectedOption = box.index;
+                        const q = questions[currentIdx];
+                        if (selectedOption === q.ans) {
+                            score += 100;
+                            playSFX('correct');
+                            spawnConfetti(clickX, clickY);
+                        } else {
+                            score = Math.max(0, score - 25);
+                            playSFX('wrong');
+                        }
+                        gameState = 'FEEDBACK';
+                    }
+                });
+            } else if (gameState === 'FEEDBACK') {
+                if (btnNextBox && clickX >= btnNextBox.x && clickX <= btnNextBox.x + btnNextBox.w && clickY >= btnNextBox.y && clickY <= btnNextBox.y + btnNextBox.h) {
+                    currentIdx++;
+                    if (currentIdx < questions.length) {
+                        gameState = 'QUIZ';
+                        selectedOption = null;
+                    } else {
+                        gameState = 'RESULT';
+                        spawnConfetti(220, 150);
+                        playSFX('correct');
+                    }
+                    playSFX('click');
+                }
+            } else if (gameState === 'RESULT') {
+                if (btnNextBox && clickX >= btnNextBox.x && clickX <= btnNextBox.x + btnNextBox.w && clickY >= btnNextBox.y && clickY <= btnNextBox.y + btnNextBox.h) {
+                    resetQuizState();
+                    playSFX('click');
+                }
+            }
+        }
+
+        // Particle System (Confetti)
+        function spawnConfetti(x, y) {
+            for (let i = 0; i < 30; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6 - 2,
+                    color: ['#7c3aed', '#f59e0b', '#10b981', '#ef4444', '#3b82f6'][Math.floor(Math.random() * 5)],
+                    size: Math.random() * 5 + 3,
+                    life: 40
+                });
+            }
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.15; // Gravity
+                p.life--;
+
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        // Utility: Multiline Text Wrapper for Canvas
+        function wrapText(context, text, x, y, maxWidth, lineHeight) {
+            let words = text.split(' ');
+            let line = '';
+
+            for (let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = context.measureText(testLine);
+                let testWidth = metrics.width;
+
+                if (testWidth > maxWidth && n > 0) {
+                    context.fillText(line, x, y);
+                    line = words[n] + ' ';
+                    y += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            context.fillText(line, x, y);
+        }
+    </script>
+</body>
+</html>
